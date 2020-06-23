@@ -85,7 +85,7 @@ Sections to Complete:
  ✓  |  'View All Employees By Department',
  ✓  |  'View All Employees By Manager',
  ✓  |  'Add Employee',
- X  |  'Remove Employee',
+ ✓  |  'Remove Employee',
  X  |  'Update Employee Role',
  X  |  'Update Employee Manager',
  ✓  |  'View All Roles',

@@ -69,7 +69,7 @@ connection.connect(function (err) {
 
 //* function to start the program, prints app header and has intro inquirer prompt
 function startApp() {
-	log.yellow(`
+	log.magenta(`
     
 ---------------------------------------------------------------------------------------                                                
      ________                          __                                              
@@ -217,7 +217,6 @@ function func3() {
 				choices: managerArray,
 			})
 			.then(function (answer) {
-				console.log(`This is your choice ----- ${answer.managerChoices}`);
 				const query2 = `
                     SELECT e.id AS employee_id, e.first_name, e.last_name, d.name AS department_name, r.title AS job_title, r.salary, CONCAT(x.first_name, " ", x.last_name) AS manager_name 
                     FROM employee e
@@ -293,7 +292,6 @@ function func4() {
 		])
 		.then(function (answer) {
 			// Builds construtor for new employee
-			console.log(answer);
 
 			let employeeFirstName = answer.first_name;
 			let employeeLastName = answer.last_name;
@@ -392,8 +390,6 @@ function func5() {
 									},
 								])
 								.then(function (answer) {
-									console.log(answer);
-									console.log(answer.id);
 									let employeeIDRemove = answer.id;
 									log.yellow(`
 
@@ -451,19 +447,303 @@ function func5() {
 					});
 			});
 		});
-	//! Call reRun() at the end of the query
 }
 
 //*Update Employee Role
 function func6() {
-	//
-	//! Call reRun() at the end of the query
+	inquirer
+		.prompt([
+			{
+				name: 'first_name',
+				type: 'list',
+				message: 'What Is The First Name Of The Employee That You Want to Update Their Role?',
+				choices: employeeFirstNameArray,
+			},
+		])
+		.then(function (answer) {
+			const query = `
+			SELECT last_name 
+    		FROM employee
+   			WHERE first_name = ?`;
+
+			connection.query(query, [answer.first_name], function (err, res) {
+				let firstNameRoleUpdate = answer.first_name;
+				inquirer
+					.prompt([
+						{
+							name: 'last_name',
+							type: 'list',
+							message: 'What Is The Last Name Of The Employee That You Want to Update Their Role?',
+							choices: function () {
+								let lastNameArray = [];
+								for (let i = 0; i < res.length; i++) {
+									lastNameArray.push(res[i].last_name);
+								}
+								return lastNameArray;
+							},
+						},
+					])
+					.then(function (answer) {
+						let lastNameRoleUpdate = answer.last_name;
+						const query = `
+						SELECT id 
+    					FROM employee
+   						WHERE first_name = ? AND last_name = ?`;
+
+						connection.query(query, [firstNameRoleUpdate, lastNameRoleUpdate], function (err, res) {
+							inquirer
+								.prompt([
+									{
+										name: 'id',
+										type: 'list',
+										message: 'What Is The Employee ID Number Of The Employee That You Want to Update Their Role?',
+										choices: function () {
+											let employeeIDarray = [];
+											for (let m = 0; m < res.length; m++) {
+												employeeIDarray.push(res[m].id);
+											}
+											return employeeIDarray;
+										},
+									},
+								])
+								.then(function (answer) {
+									let employeeIDRoleUpdate = answer.id;
+									inquirer
+										.prompt([
+											{
+												name: 'role_title',
+												type: 'list',
+												message: 'What Is The New Role You Want To Update For This Employee?',
+												choices: roleArray,
+											},
+										])
+										.then(function (answer) {
+											let newTitleRoleUpdate = answer.role_title;
+
+											function FindNewRoleID() {
+												for (let q = 0; q < roleAndIDArray.length; q++) {
+													if (roleAndIDArray[q].title === answer.role_title) {
+														return roleAndIDArray[q].id;
+													}
+												}
+											}
+
+											let updateroleID = FindNewRoleID();
+
+											log.yellow(`
+			
+			-------------------------------------------------------------------------------------------------
+			Employee Role Update Request:
+			First Name: ${firstNameRoleUpdate} | Last Name: ${lastNameRoleUpdate} | New Role Title: ${newTitleRoleUpdate}
+			-------------------------------------------------------------------------------------------------
+						
+						`);
+											inquirer
+												.prompt([
+													{
+														name: 'ensureRemove',
+														type: 'list',
+														message: `Are You Sure You Want To Update This Employee Role: ${firstNameRoleUpdate} ${lastNameRoleUpdate}, New Role Title: ${newTitleRoleUpdate}?`,
+														choices: ['YES', 'NO'],
+													},
+												])
+												.then(function (answer) {
+													if (answer.ensureRemove === 'YES') {
+														//
+														log.red(`
+			
+			-------------------------------------------------------------------------------------------------
+			Employee: ${firstNameRoleUpdate} ${lastNameRoleUpdate}, New Role Title: ${newTitleRoleUpdate} Has Been Updated
+			-------------------------------------------------------------------------------------------------
+								
+								`);
+														//* SQL command to remove user
+														connection.query(
+															'UPDATE employee SET role_id = ? WHERE first_name = ? AND last_name = ? AND id = ?',
+															[updateroleID, firstNameRoleUpdate, lastNameRoleUpdate, employeeIDRoleUpdate],
+
+															function (err, res) {
+																if (err) throw err;
+
+																log.cyan(`
+			
+			-------------------------------------------------------------------------------------------------
+			Now That You Have Updated Employee: ${firstNameRoleUpdate} ${lastNameRoleUpdate}, Don't Forget To Update Their Manager If Necessary
+			-------------------------------------------------------------------------------------------------
+								
+								`);
+
+																reRun();
+															}
+														);
+													} else {
+														log.blue(`
+			
+			-------------------------------------------------------------------------------------------------
+			Update Employee Role Request Has Been Aborted
+			-------------------------------------------------------------------------------------------------
+								
+								`);
+														//*If No, Calls ReRun function to Ask if They Want to Leave The Program or Go To Main Menu
+														reRun();
+													}
+												});
+											//
+										});
+								});
+						});
+					});
+			});
+		});
 }
 
 //*Update Employee Manager
 function func7() {
 	//
-	//! Call reRun() at the end of the query
+	inquirer
+		.prompt([
+			{
+				name: 'first_name',
+				type: 'list',
+				message: 'What Is The First Name Of The Employee That You Want to Update Their Manager?',
+				choices: employeeFirstNameArray,
+			},
+		])
+		.then(function (answer) {
+			const query = `
+			SELECT last_name 
+    		FROM employee
+   			WHERE first_name = ?`;
+
+			connection.query(query, [answer.first_name], function (err, res) {
+				let firstNameManagerUpdate = answer.first_name;
+				inquirer
+					.prompt([
+						{
+							name: 'last_name',
+							type: 'list',
+							message: 'What Is The Last Name Of The Employee That You Want to Update Their Manager?',
+							choices: function () {
+								let lastNameArray = [];
+								for (let i = 0; i < res.length; i++) {
+									lastNameArray.push(res[i].last_name);
+								}
+								return lastNameArray;
+							},
+						},
+					])
+					.then(function (answer) {
+						let lastNameManagerUpdate = answer.last_name;
+						const query = `
+						SELECT id 
+    					FROM employee
+   						WHERE first_name = ? AND last_name = ?`;
+
+						connection.query(query, [firstNameManagerUpdate, lastNameManagerUpdate], function (err, res) {
+							inquirer
+								.prompt([
+									{
+										name: 'id',
+										type: 'list',
+										message: 'What Is The Employee ID Number Of The Employee That You Want to Update Their Manager?',
+										choices: function () {
+											let employeeIDarray = [];
+											for (let m = 0; m < res.length; m++) {
+												employeeIDarray.push(res[m].id);
+											}
+											return employeeIDarray;
+										},
+									},
+								])
+								.then(function (answer) {
+									let employeeIDManagerUpdate = answer.id;
+									inquirer
+										.prompt([
+											{
+												name: 'manager_name',
+												type: 'list',
+												message: 'Who Is The New Manager You Want To Update For This Employee?',
+												choices: managerArray,
+											},
+										])
+										.then(function (answer) {
+											let newManagerUpdate = answer.manager_name || null;
+
+											function FindNewManagerID() {
+												for (let q = 0; q < managerAndIDArray.length; q++) {
+													if (managerAndIDArray[q].manager_name === answer.manager_name) {
+														return managerAndIDArray[q].manager_id;
+													}
+												}
+											}
+
+											let updateManagerID = FindNewManagerID();
+
+											log.yellow(`
+			
+			-------------------------------------------------------------------------------------------------
+			Employee Manager Update Request:
+			First Name: ${firstNameManagerUpdate} | Last Name: ${lastNameManagerUpdate} | New Manager: ${newManagerUpdate}
+			-------------------------------------------------------------------------------------------------
+						
+						`);
+											inquirer
+												.prompt([
+													{
+														name: 'ensureRemove',
+														type: 'list',
+														message: `Are You Sure You Want To Update This Employee Manager: ${firstNameManagerUpdate} ${lastNameManagerUpdate}, New Manager Title: ${newManagerUpdate}?`,
+														choices: ['YES', 'NO'],
+													},
+												])
+												.then(function (answer) {
+													if (answer.ensureRemove === 'YES') {
+														//
+														log.red(`
+			
+			-------------------------------------------------------------------------------------------------
+			Employee: ${firstNameManagerUpdate} ${lastNameManagerUpdate} Has Been Updated With The New Manager: ${newManagerUpdate} 
+			-------------------------------------------------------------------------------------------------
+								
+								`);
+														//* SQL command to update user
+														connection.query(
+															'UPDATE employee SET manager_id = ? WHERE first_name = ? AND last_name = ? AND id = ?',
+															[updateManagerID, firstNameManagerUpdate, lastNameManagerUpdate, employeeIDManagerUpdate],
+
+															function (err, res) {
+																if (err) throw err;
+
+																log.cyan(`
+			
+			-------------------------------------------------------------------------------------------------
+			Now That You Have Updated The Manager Of Employee: ${firstNameManagerUpdate} ${lastNameManagerUpdate}, Don't Forget To Update Their Role If Necessary
+			-------------------------------------------------------------------------------------------------
+								
+								`);
+
+																reRun();
+															}
+														);
+													} else {
+														log.blue(`
+			
+			-------------------------------------------------------------------------------------------------
+			Update Employee Manager Request Has Been Aborted
+			-------------------------------------------------------------------------------------------------
+								
+								`);
+														//*If No, Calls ReRun function to Ask if They Want to Leave The Program or Go To Main Menu
+														reRun();
+													}
+												});
+											//
+										});
+								});
+						});
+					});
+			});
+		});
 }
 
 //*View All Roles
