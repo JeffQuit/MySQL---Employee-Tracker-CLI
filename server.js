@@ -401,7 +401,24 @@ function func9() {
 //*Remove Role
 function func10() {
 	//
-	//! Call reRun() at the end of the query
+	inquirer
+		.prompt([
+			{
+				name: 'removeRole',
+				type: 'list',
+				message: 'What Role Do You Want To Remove?',
+				choices: roleArray,
+			},
+		])
+		.then(function (answer) {
+			connection.query('DELETE FROM role WHERE title = ?', [answer.removeRole], function (err, res) {
+				if (err) throw err;
+				log.red(`
+				The ${answer.removeRole} Role Has Been Removed From The DB
+				`);
+			});
+			reRun();
+		});
 }
 
 //*View All Departments
@@ -445,7 +462,24 @@ function func12() {
 //*Remove Department
 function func13() {
 	//
-	//! Call reRun() at the end of the query
+	inquirer
+		.prompt([
+			{
+				name: 'removeDept',
+				type: 'list',
+				message: 'What Department Do You Want To Remove?',
+				choices: deptArray,
+			},
+		])
+		.then(function (answer) {
+			connection.query('DELETE FROM department WHERE name = ?', [answer.removeDept], function (err, res) {
+				if (err) throw err;
+				log.red(`
+				The ${answer.removeDept} Department Has Been Removed From The DB
+				`);
+			});
+			reRun();
+		});
 }
 
 //*View Total Utalized Budget Of A Department
