@@ -94,5 +94,5 @@ Sections to Complete:
  ✓  |  'View All Departments',
  ✓  |  'Add Department',
  ✓  |  'Remove Department',
- X  |  'View Total Utalized Budget Of A Department',
+ ✓  |  'View Total Utalized Budget Of A Department',
  ✓  |  'Exit Application',

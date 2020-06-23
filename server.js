@@ -16,6 +16,8 @@ const log = new Logger();
 let managerArray = [];
 let roleArray = [];
 let deptArray = [];
+let employeeIDArray = [];
+let employeeFirstNameArray = [];
 let managerAndIDArray = [];
 let roleAndIDArray = [];
 
@@ -59,6 +61,8 @@ connection.connect(function (err) {
 	buildManagerArray();
 	buildRoleArray();
 	builddeptArray();
+	buildEmployeeIDArray();
+	buildEmployeeFirstNameArray();
 	ManagerWithID();
 	RoleWithID();
 });
@@ -135,7 +139,7 @@ function startApp() {
 function func1() {
 	//
 
-	var query = `
+	const query = `
     SELECT e.id AS employee_id, e.first_name, e.last_name, d.name AS department_name, r.title AS job_title, r.salary, CONCAT(x.first_name, " ", x.last_name) AS manager_name 
     FROM employee e
     LEFT JOIN role r
@@ -167,13 +171,7 @@ function func2() {
 				name: 'deptChoice',
 				type: 'list',
 				message: 'What Department Would You Like To View All Employees Within?',
-				choices: function () {
-					const departmentChoices = [];
-					for (let i = 0; i < res.length; i++) {
-						departmentChoices.push(res[i].name);
-					}
-					return departmentChoices;
-				},
+				choices: deptArray,
 			})
 			.then(function (answer) {
 				const query2 = `
@@ -216,13 +214,7 @@ function func3() {
 				name: 'managerChoices',
 				type: 'list',
 				message: 'Who Is The Manager You Want To View All Employees Who Work Under?',
-				choices: function () {
-					const ManagerChoiceArray = [];
-					for (let i = 0; i < res.length; i++) {
-						ManagerChoiceArray.push(res[i].manager_name);
-					}
-					return ManagerChoiceArray;
-				},
+				choices: managerArray,
 			})
 			.then(function (answer) {
 				console.log(`This is your choice ----- ${answer.managerChoices}`);
@@ -326,7 +318,13 @@ function func4() {
 			let employeeManager = FindManagerID();
 
 			//* Take information and build a constructor to insert into DB
-			log.green(`Adding New Employee ${employeeFirstName} ${employeeLastName} to Database!`);
+			log.green(`
+			
+			-------------------------------------------------------------------------------------------------
+			Adding New Employee ${employeeFirstName} ${employeeLastName} to Database!
+			-------------------------------------------------------------------------------------------------
+			
+			`);
 			let addnewEmployee = new employee(employeeFirstName, employeeLastName, employeeRole, employeeManager);
 			connection.query('INSERT INTO employee SET ?', addnewEmployee, function (err, res) {
 				if (err) throw err;
@@ -336,8 +334,123 @@ function func4() {
 }
 
 //*Remove Employee
+//* Will ask First Name, Then Last Name, then Matching Employee ID To Ensure That The Correct Employee Is Removed as Employees May Share The Same Name
 function func5() {
-	//
+	inquirer
+		.prompt([
+			{
+				name: 'first_name',
+				type: 'list',
+				message: 'What Is The First Name Of The Employee You Want To Remove?',
+				choices: employeeFirstNameArray,
+			},
+		])
+		.then(function (answer) {
+			const query = `
+			SELECT last_name 
+    		FROM employee
+   			WHERE first_name = ?`;
+
+			connection.query(query, [answer.first_name], function (err, res) {
+				let firstNameRemove = answer.first_name;
+				inquirer
+					.prompt([
+						{
+							name: 'last_name',
+							type: 'list',
+							message: 'What Is The Last Name Of The Employee You Want To Remove?',
+							choices: function () {
+								let lastNameArray = [];
+								for (let i = 0; i < res.length; i++) {
+									lastNameArray.push(res[i].last_name);
+								}
+								return lastNameArray;
+							},
+						},
+					])
+					.then(function (answer) {
+						const query = `
+						SELECT id 
+    					FROM employee
+   						WHERE first_name = ? AND last_name = ?`;
+
+						connection.query(query, [firstNameRemove, answer.last_name], function (err, res) {
+							let lastNameRemove = answer.last_name;
+							inquirer
+								.prompt([
+									{
+										name: 'id',
+										type: 'list',
+										message: 'What Is The Employee ID Number Of The Employee You Want To Remove?',
+										choices: function () {
+											let employeeIDarray = [];
+											for (let m = 0; m < res.length; m++) {
+												employeeIDarray.push(res[m].id);
+											}
+											return employeeIDarray;
+										},
+									},
+								])
+								.then(function (answer) {
+									console.log(answer);
+									console.log(answer.id);
+									let employeeIDRemove = answer.id;
+									log.yellow(`
+
+			-------------------------------------------------------------------------------------------------
+			Employee To Be Removed:
+			First Name ${firstNameRemove} | Last Name ${lastNameRemove} | Employee ID ${employeeIDRemove}
+			-------------------------------------------------------------------------------------------------
+
+									`);
+									inquirer
+										.prompt([
+											{
+												name: 'ensureRemove',
+												type: 'list',
+												message: `Are You Sure You Want To Remove Employee: ${firstNameRemove} ${lastNameRemove}, ID#: ${employeeIDRemove}?`,
+												choices: ['YES', 'NO'],
+											},
+										])
+										.then(function (answer) {
+											if (answer.ensureRemove === 'YES') {
+												//
+												log.red(`
+
+			-------------------------------------------------------------------------------------------------
+			Employee: ${firstNameRemove} ${lastNameRemove}, ID#: ${employeeIDRemove} Has Been Removed
+			-------------------------------------------------------------------------------------------------
+												
+												`);
+												//* SQL command to remove user
+												connection.query(
+													'DELETE FROM employee WHERE first_name = ? AND last_name = ? AND id = ?',
+													[firstNameRemove, lastNameRemove, employeeIDRemove],
+
+													function (err, res) {
+														if (err) throw err;
+														reRun();
+													}
+												);
+											} else {
+												log.blue(`
+
+			-------------------------------------------------------------------------------------------------
+			Removal Request Has Been Aborted
+			-------------------------------------------------------------------------------------------------
+												
+												`);
+												//*If No, Calls ReRun function to Ask if They Want to Leave The Program or Go To Main Menu
+												reRun();
+											}
+										});
+
+									//
+								});
+						});
+					});
+			});
+		});
 	//! Call reRun() at the end of the query
 }
 
@@ -356,7 +469,7 @@ function func7() {
 //*View All Roles
 function func8() {
 	//
-	var query = `
+	const query = `
     SELECT * FROM role`;
 
 	connection.query(query, function (err, res) {
@@ -389,7 +502,13 @@ function func9() {
 			let newRoleID = roleArray.length + 1;
 
 			//* Take information and build new role constructor
-			log.green(`Adding New Role | Role Title: ${newRoleName} | Role Salary ${newRoleSalary} | Role ID ${newRoleID} to Database!`);
+			log.green(`
+
+			-------------------------------------------------------------------------------------------------
+			Adding New Role | Role Title: ${newRoleName} | Role Salary ${newRoleSalary} | Role ID ${newRoleID} to Database!
+			-------------------------------------------------------------------------------------------------
+
+			`);
 			let addNewRole = new role(newRoleName, newRoleSalary, newRoleID);
 			connection.query('INSERT INTO role SET ?', addNewRole, function (err, res) {
 				if (err) throw err;
@@ -414,7 +533,11 @@ function func10() {
 			connection.query('DELETE FROM role WHERE title = ?', [answer.removeRole], function (err, res) {
 				if (err) throw err;
 				log.red(`
-				The ${answer.removeRole} Role Has Been Removed From The DB
+
+			-------------------------------------------------------------------------------------------------
+			The ${answer.removeRole} Role Has Been Removed From The DB
+			-------------------------------------------------------------------------------------------------
+
 				`);
 			});
 			reRun();
@@ -423,7 +546,7 @@ function func10() {
 
 //*View All Departments
 function func11() {
-	var query = `
+	const query = `
     SELECT * FROM department`;
 
 	connection.query(query, function (err, res) {
@@ -450,7 +573,13 @@ function func12() {
 			let newDeptID = deptArray.length + 1;
 
 			//* Take information and build new role constructor
-			log.green(`Adding New Department | Department Name: ${newdeptName} | Department ID ${newDeptID} to Database!`);
+			log.green(`
+			
+			-------------------------------------------------------------------------------------------------
+			Adding New Department | Department Name: ${newdeptName} | Department ID ${newDeptID} to Database!
+			-------------------------------------------------------------------------------------------------
+			
+			`);
 			let addNewDept = new department(newdeptName, newDeptID);
 			connection.query('INSERT INTO department SET ?', addNewDept, function (err, res) {
 				if (err) throw err;
@@ -475,7 +604,11 @@ function func13() {
 			connection.query('DELETE FROM department WHERE name = ?', [answer.removeDept], function (err, res) {
 				if (err) throw err;
 				log.red(`
-				The ${answer.removeDept} Department Has Been Removed From The DB
+
+			-------------------------------------------------------------------------------------------------
+			The ${answer.removeDept} Department Has Been Removed From The DB
+			-------------------------------------------------------------------------------------------------
+
 				`);
 			});
 			reRun();
@@ -569,7 +702,7 @@ function reRun() {
 
 //* Builds array for Manager Names
 function buildManagerArray() {
-	var query = `
+	const query = `
     SELECT DISTINCT x.id, CONCAT(x.first_name, " ", x.last_name) 
     AS manager_name 
     FROM employee e 
@@ -587,7 +720,7 @@ function buildManagerArray() {
 
 //* Builds array for Job Title Names
 function buildRoleArray() {
-	var query = `
+	const query = `
     SELECT id, title 
     FROM role;`;
 
@@ -601,9 +734,9 @@ function buildRoleArray() {
 
 //* Builds array for Job Title Names
 function builddeptArray() {
-	var query = `
+	const query = `
     SELECT id, name 
-    FROM department;;`;
+    FROM department;`;
 
 	connection.query(query, function (err, res) {
 		if (err) throw err;
@@ -613,8 +746,34 @@ function builddeptArray() {
 	});
 }
 
+function buildEmployeeIDArray() {
+	const query = `
+    SELECT id
+    FROM employee;`;
+
+	connection.query(query, function (err, res) {
+		if (err) throw err;
+		for (let i = 0; i < res.length; i++) {
+			employeeIDArray.push(res[i].id);
+		}
+	});
+}
+
+function buildEmployeeFirstNameArray() {
+	const query = `
+    SELECT first_name
+    FROM employee;`;
+
+	connection.query(query, function (err, res) {
+		if (err) throw err;
+		for (let i = 0; i < res.length; i++) {
+			employeeFirstNameArray.push(res[i].first_name);
+		}
+	});
+}
+
 function ManagerWithID() {
-	var query = `
+	const query = `
     SELECT DISTINCT CONCAT(x.first_name, " ", x.last_name) AS manager_name, x.id AS manager_id 
     FROM employee e
     LEFT JOIN employee x
@@ -629,7 +788,7 @@ function ManagerWithID() {
 }
 
 function RoleWithID() {
-	var query = `
+	const query = `
     SELECT id, title 
     FROM role;`;
 
