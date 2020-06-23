@@ -22,7 +22,7 @@ let roleAndIDArray = [];
 //*Intro Inquirer Question
 const introQ = [
 	{
-		type: 'list',
+		type: 'rawlist',
 		message: 'What Would You Like To Do?',
 		name: 'queryInto',
 		choices: [
@@ -146,6 +146,11 @@ function func1() {
     ON e.manager_id = x.id`;
 
 	connection.query(query, function (err, res) {
+		if (err) throw err;
+		//Adds space between the console table
+		console.log(`
+		
+		`);
 		console.table(res);
 
 		reRun();
@@ -156,6 +161,7 @@ function func2() {
 	//
 	const query = 'SELECT name FROM department';
 	connection.query(query, function (err, res) {
+		if (err) throw err;
 		inquirer
 			.prompt({
 				name: 'deptChoice',
@@ -181,6 +187,11 @@ function func2() {
                     ON e.manager_id = x.id
                     WHERE name = ?`;
 				connection.query(query2, [answer.deptChoice], function (err, res) {
+					if (err) throw err;
+					//Adds space between the console table
+					console.log(`
+		
+					`);
 					console.table(res);
 					reRun();
 				});
@@ -199,6 +210,7 @@ function func3() {
     ON e.manager_id = x.id
     `;
 	connection.query(query, function (err, res) {
+		if (err) throw err;
 		inquirer
 			.prompt({
 				name: 'managerChoices',
@@ -225,6 +237,11 @@ function func3() {
                     ON e.manager_id = x.id
                     HAVING manager_name = ?`;
 				connection.query(query2, [answer.managerChoices], function (err, res) {
+					if (err) throw err;
+					//Adds space between the console table
+					console.log(`
+		
+					`);
 					console.table(res);
 					reRun();
 				});
@@ -293,7 +310,6 @@ function func4() {
 			function FindRoleID() {
 				for (let p = 0; p < roleAndIDArray.length; p++) {
 					if (roleAndIDArray[p].title === answer.role) {
-						console.log(roleAndIDArray[p].id);
 						return roleAndIDArray[p].id;
 					}
 				}
@@ -302,20 +318,19 @@ function func4() {
 			function FindManagerID() {
 				for (let q = 0; q < managerAndIDArray.length; q++) {
 					if (managerAndIDArray[q].manager_name === answer.manager) {
-						console.log(managerAndIDArray[q].manager_id);
 						return managerAndIDArray[q].manager_id;
 					}
 				}
 			}
 			let employeeRole = FindRoleID();
 			let employeeManager = FindManagerID();
-			console.log(`
-            First Name: ${employeeFirstName}
-            Last Name ${employeeLastName}
-            Role ${employeeRole}
-            Manager Name ${employeeManager}
-            `);
 
+			//* Take information and build a constructor to insert into DB
+			log.green(`Adding New Employee ${employeeFirstName} ${employeeLastName} to Database!`);
+			let addnewEmployee = new employee(employeeFirstName, employeeLastName, employeeRole, employeeManager);
+			connection.query('INSERT INTO employee SET ?', addnewEmployee, function (err, res) {
+				if (err) throw err;
+			});
 			reRun();
 		});
 }
@@ -345,6 +360,7 @@ function func8() {
     SELECT * FROM role`;
 
 	connection.query(query, function (err, res) {
+		if (err) throw err;
 		console.table(res);
 
 		reRun();
@@ -369,6 +385,7 @@ function func11() {
     SELECT * FROM department`;
 
 	connection.query(query, function (err, res) {
+		if (err) throw err;
 		console.table(res);
 
 		reRun();
@@ -457,6 +474,7 @@ function buildManagerArray() {
     ON e.manager_id = x.id`;
 
 	connection.query(query, function (err, res) {
+		if (err) throw err;
 		for (let i = 0; i < res.length; i++) {
 			managerArray.push(res[i].manager_name);
 		}
@@ -471,6 +489,7 @@ function buildRoleArray() {
     FROM role;`;
 
 	connection.query(query, function (err, res) {
+		if (err) throw err;
 		for (let i = 0; i < res.length; i++) {
 			roleArray.push(res[i].title);
 		}
@@ -484,6 +503,7 @@ function builddeptArray() {
     FROM department;;`;
 
 	connection.query(query, function (err, res) {
+		if (err) throw err;
 		for (let i = 0; i < res.length; i++) {
 			deptArray.push(res[i].name);
 		}
@@ -498,6 +518,7 @@ function ManagerWithID() {
     ON e.manager_id = x.id`;
 
 	connection.query(query, function (err, res) {
+		if (err) throw err;
 		for (let i = 0; i < res.length; i++) {
 			managerAndIDArray.push(res[i]);
 		}
@@ -510,6 +531,7 @@ function RoleWithID() {
     FROM role;`;
 
 	connection.query(query, function (err, res) {
+		if (err) throw err;
 		for (let i = 0; i < res.length; i++) {
 			roleAndIDArray.push(res[i]);
 		}
