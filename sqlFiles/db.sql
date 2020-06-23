@@ -15,7 +15,7 @@ CREATE TABLE employee (
 CREATE TABLE role (
   id INT NOT NULL AUTO_INCREMENT,
   title VARCHAR(30) NULL,
-  salary DECIMAL(10,4) NULL,
+  salary DECIMAL(10,2) NULL,
   department_id INT NULL,
   PRIMARY KEY (id)
 );

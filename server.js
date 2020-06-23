@@ -484,8 +484,33 @@ function func13() {
 
 //*View Total Utalized Budget Of A Department
 function func14() {
-	//
-	//! Call reRun() at the end of the query
+	inquirer
+		.prompt({
+			name: 'deptChoice',
+			type: 'list',
+			message: 'What Department Would You Like To View The Total Utalized Budget?',
+			choices: deptArray,
+		})
+		.then(function (answer) {
+			const query = `
+			SELECT d.name AS Department_Name, SUM(r.salary) AS Total_Budget
+            FROM employee e
+            LEFT JOIN role r
+            ON e.role_id = r.id
+            LEFT JOIN department d
+            ON d.id = r.department_id
+            GROUP BY d.name
+            HAVING d.name = ?`;
+			connection.query(query, [answer.deptChoice], function (err, res) {
+				if (err) throw err;
+				//Adds space between the console table
+				console.log(`
+		
+					`);
+				console.table(res);
+				reRun();
+			});
+		});
 }
 
 //*Exit App
