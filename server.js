@@ -369,8 +369,33 @@ function func8() {
 
 //*Add Role
 function func9() {
-	//
-	//! Call reRun() at the end of the query
+	inquirer
+		.prompt([
+			{
+				name: 'newRole',
+				type: 'input',
+				message: 'What Is The Title Of The New Role You Want To Add?',
+			},
+			{
+				name: 'newRoleSalary',
+				type: 'number',
+				message: 'What Is The Salary Of This New Role?',
+			},
+		])
+		.then(function (answer) {
+			//*Need to add role name and then find length of role array to add ID #
+			let newRoleName = answer.newRole;
+			let newRoleSalary = answer.newRoleSalary;
+			let newRoleID = roleArray.length + 1;
+
+			//* Take information and build new role constructor
+			log.green(`Adding New Role | Role Title: ${newRoleName} | Role Salary ${newRoleSalary} | Role ID ${newRoleID} to Database!`);
+			let addNewRole = new role(newRoleName, newRoleSalary, newRoleID);
+			connection.query('INSERT INTO role SET ?', addNewRole, function (err, res) {
+				if (err) throw err;
+			});
+			reRun();
+		});
 }
 
 //*Remove Role
@@ -394,8 +419,27 @@ function func11() {
 
 //*Add Department
 function func12() {
-	//
-	//! Call reRun() at the end of the query
+	inquirer
+		.prompt([
+			{
+				name: 'newDept',
+				type: 'input',
+				message: 'What Is The Name Of This New Department?',
+			},
+		])
+		.then(function (answer) {
+			//*Need to add role name and then find length of role array to add ID #
+			let newdeptName = answer.newDept;
+			let newDeptID = deptArray.length + 1;
+
+			//* Take information and build new role constructor
+			log.green(`Adding New Department | Department Name: ${newdeptName} | Department ID ${newDeptID} to Database!`);
+			let addNewDept = new department(newdeptName, newDeptID);
+			connection.query('INSERT INTO department SET ?', addNewDept, function (err, res) {
+				if (err) throw err;
+			});
+			reRun();
+		});
 }
 
 //*Remove Department
