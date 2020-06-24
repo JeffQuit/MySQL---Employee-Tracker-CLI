@@ -3,14 +3,13 @@ const mysql = require('mysql');
 const inquirer = require('inquirer');
 const cTable = require('console.table');
 
+//* Switching Logger to Chalk NPM Package
+const chalk = require('chalk');
+
 //*Constructor Classes
 const employee = require('./constr/employee');
 const role = require('./constr/role');
 const department = require('./constr/department');
-
-//*Logger to allow colored console logs
-const Logger = require('./Logger/logger');
-const log = new Logger();
 
 //* Arrays
 let managerArray = [];
@@ -69,7 +68,8 @@ connection.connect(function (err) {
 
 //* function to start the program, prints app header and has intro inquirer prompt
 function startApp() {
-	log.magenta(`
+	console.log(
+		chalk.magentaBright(`
     
 ---------------------------------------------------------------------------------------                                                
      ________                          __                                              
@@ -98,7 +98,8 @@ function startApp() {
                                                 $$$$$$/                                                                    
 -----------------------------------------------------------------------------------------
                                                                                           
-    `);
+    `)
+	);
 	inquirer.prompt(introQ).then(function (data) {
 		const intoQuestion = data.queryInto;
 		if (intoQuestion === 'View All Employees') {
@@ -254,9 +255,11 @@ function func4() {
 					if (letters) {
 						return true;
 					} else {
-						log.red(`
+						console.log(
+							chalk.redBright(`
                       Invalid Submission. Please Only Submit Letters
-                Please Delete Submission And Re-Submit With Only Letters`);
+                Please Delete Submission And Re-Submit With Only Letters`)
+						);
 						return false;
 					}
 				},
@@ -270,9 +273,11 @@ function func4() {
 					if (letters) {
 						return true;
 					} else {
-						log.red(`
+						console.log(
+							chalk.redBright(`
                       Invalid Submission. Please Only Submit Letters
-                Please Delete Submission And Re-Submit With Only Letters`);
+                Please Delete Submission And Re-Submit With Only Letters`)
+						);
 						return false;
 					}
 				},
@@ -316,13 +321,15 @@ function func4() {
 			let employeeManager = FindManagerID();
 
 			//* Take information and build a constructor to insert into DB
-			log.green(`
+			console.log(
+				chalk.greenBright(`
 			
 			-------------------------------------------------------------------------------------------------
 			Adding New Employee ${employeeFirstName} ${employeeLastName} to Database!
 			-------------------------------------------------------------------------------------------------
 			
-			`);
+			`)
+			);
 			let addnewEmployee = new employee(employeeFirstName, employeeLastName, employeeRole, employeeManager);
 			connection.query('INSERT INTO employee SET ?', addnewEmployee, function (err, res) {
 				if (err) throw err;
@@ -391,14 +398,16 @@ function func5() {
 								])
 								.then(function (answer) {
 									let employeeIDRemove = answer.id;
-									log.yellow(`
+									console.log(
+										chalk.yellowBright(`
 
 			-------------------------------------------------------------------------------------------------
 			Employee To Be Removed:
 			First Name ${firstNameRemove} | Last Name ${lastNameRemove} | Employee ID ${employeeIDRemove}
 			-------------------------------------------------------------------------------------------------
 
-									`);
+									`)
+									);
 									inquirer
 										.prompt([
 											{
@@ -411,13 +420,15 @@ function func5() {
 										.then(function (answer) {
 											if (answer.ensureRemove === 'YES') {
 												//
-												log.red(`
+												console.log(
+													chalk.redBright(`
 
 			-------------------------------------------------------------------------------------------------
 			Employee: ${firstNameRemove} ${lastNameRemove}, ID#: ${employeeIDRemove} Has Been Removed
 			-------------------------------------------------------------------------------------------------
 												
-												`);
+												`)
+												);
 												//* SQL command to remove user
 												connection.query(
 													'DELETE FROM employee WHERE first_name = ? AND last_name = ? AND id = ?',
@@ -429,13 +440,15 @@ function func5() {
 													}
 												);
 											} else {
-												log.blue(`
+												console.log(
+													chalk.blueBright(`
 
 			-------------------------------------------------------------------------------------------------
 			Removal Request Has Been Aborted
 			-------------------------------------------------------------------------------------------------
 												
-												`);
+												`)
+												);
 												//*If No, Calls ReRun function to Ask if They Want to Leave The Program or Go To Main Menu
 												reRun();
 											}
@@ -530,14 +543,16 @@ function func6() {
 
 											let updateroleID = FindNewRoleID();
 
-											log.yellow(`
+											lconsole.log(
+												chalk.yellowBright(`
 			
 			-------------------------------------------------------------------------------------------------
 			Employee Role Update Request:
 			First Name: ${firstNameRoleUpdate} | Last Name: ${lastNameRoleUpdate} | New Role Title: ${newTitleRoleUpdate}
 			-------------------------------------------------------------------------------------------------
 						
-						`);
+						`)
+											);
 											inquirer
 												.prompt([
 													{
@@ -550,13 +565,15 @@ function func6() {
 												.then(function (answer) {
 													if (answer.ensureRemove === 'YES') {
 														//
-														log.red(`
+														lconsole.log(
+															chalk.redBright(`
 			
 			-------------------------------------------------------------------------------------------------
 			Employee: ${firstNameRoleUpdate} ${lastNameRoleUpdate}, New Role Title: ${newTitleRoleUpdate} Has Been Updated
 			-------------------------------------------------------------------------------------------------
 								
-								`);
+								`)
+														);
 														//* SQL command to remove user
 														connection.query(
 															'UPDATE employee SET role_id = ? WHERE first_name = ? AND last_name = ? AND id = ?',
@@ -565,25 +582,29 @@ function func6() {
 															function (err, res) {
 																if (err) throw err;
 
-																log.cyan(`
+																console.log(
+																	chalk.cyanBright(`
 			
 			-------------------------------------------------------------------------------------------------
 			Now That You Have Updated Employee: ${firstNameRoleUpdate} ${lastNameRoleUpdate}, Don't Forget To Update Their Manager If Necessary
 			-------------------------------------------------------------------------------------------------
 								
-								`);
+								`)
+																);
 
 																reRun();
 															}
 														);
 													} else {
-														log.blue(`
+														console.log(
+															chalk.blueBright(`
 			
 			-------------------------------------------------------------------------------------------------
 			Update Employee Role Request Has Been Aborted
 			-------------------------------------------------------------------------------------------------
 								
-								`);
+								`)
+														);
 														//*If No, Calls ReRun function to Ask if They Want to Leave The Program or Go To Main Menu
 														reRun();
 													}
@@ -679,14 +700,16 @@ function func7() {
 
 											let updateManagerID = FindNewManagerID();
 
-											log.yellow(`
+											console.log(
+												chalk.yellowBright(`
 			
 			-------------------------------------------------------------------------------------------------
 			Employee Manager Update Request:
 			First Name: ${firstNameManagerUpdate} | Last Name: ${lastNameManagerUpdate} | New Manager: ${newManagerUpdate}
 			-------------------------------------------------------------------------------------------------
 						
-						`);
+						`)
+											);
 											inquirer
 												.prompt([
 													{
@@ -699,13 +722,15 @@ function func7() {
 												.then(function (answer) {
 													if (answer.ensureRemove === 'YES') {
 														//
-														log.red(`
+														console.log(
+															chalk.redBright(`
 			
 			-------------------------------------------------------------------------------------------------
 			Employee: ${firstNameManagerUpdate} ${lastNameManagerUpdate} Has Been Updated With The New Manager: ${newManagerUpdate} 
 			-------------------------------------------------------------------------------------------------
 								
-								`);
+								`)
+														);
 														//* SQL command to update user
 														connection.query(
 															'UPDATE employee SET manager_id = ? WHERE first_name = ? AND last_name = ? AND id = ?',
@@ -714,25 +739,29 @@ function func7() {
 															function (err, res) {
 																if (err) throw err;
 
-																log.cyan(`
+																console.log(
+																	chalk.cyanBright(`
 			
 			-------------------------------------------------------------------------------------------------
 			Now That You Have Updated The Manager Of Employee: ${firstNameManagerUpdate} ${lastNameManagerUpdate}, Don't Forget To Update Their Role If Necessary
 			-------------------------------------------------------------------------------------------------
 								
-								`);
+								`)
+																);
 
 																reRun();
 															}
 														);
 													} else {
-														log.blue(`
+														console.log(
+															chalk.blueBright(`
 			
 			-------------------------------------------------------------------------------------------------
 			Update Employee Manager Request Has Been Aborted
 			-------------------------------------------------------------------------------------------------
 								
-								`);
+								`)
+														);
 														//*If No, Calls ReRun function to Ask if They Want to Leave The Program or Go To Main Menu
 														reRun();
 													}
@@ -782,13 +811,15 @@ function func9() {
 			let newRoleID = roleArray.length + 1;
 
 			//* Take information and build new role constructor
-			log.green(`
+			console.log(
+				chalk.greenBright(`
 
 			-------------------------------------------------------------------------------------------------
 			Adding New Role | Role Title: ${newRoleName} | Role Salary ${newRoleSalary} | Role ID ${newRoleID} to Database!
 			-------------------------------------------------------------------------------------------------
 
-			`);
+			`)
+			);
 			let addNewRole = new role(newRoleName, newRoleSalary, newRoleID);
 			connection.query('INSERT INTO role SET ?', addNewRole, function (err, res) {
 				if (err) throw err;
@@ -812,13 +843,15 @@ function func10() {
 		.then(function (answer) {
 			connection.query('DELETE FROM role WHERE title = ?', [answer.removeRole], function (err, res) {
 				if (err) throw err;
-				log.red(`
+				console.log(
+					chalk.redBright(`
 
 			-------------------------------------------------------------------------------------------------
 			The ${answer.removeRole} Role Has Been Removed From The DB
 			-------------------------------------------------------------------------------------------------
 
-				`);
+				`)
+				);
 			});
 			reRun();
 		});
@@ -853,13 +886,15 @@ function func12() {
 			let newDeptID = deptArray.length + 1;
 
 			//* Take information and build new role constructor
-			log.green(`
+			console.log(
+				chalk.greenBright(`
 			
 			-------------------------------------------------------------------------------------------------
 			Adding New Department | Department Name: ${newdeptName} | Department ID ${newDeptID} to Database!
 			-------------------------------------------------------------------------------------------------
 			
-			`);
+			`)
+			);
 			let addNewDept = new department(newdeptName, newDeptID);
 			connection.query('INSERT INTO department SET ?', addNewDept, function (err, res) {
 				if (err) throw err;
@@ -883,13 +918,15 @@ function func13() {
 		.then(function (answer) {
 			connection.query('DELETE FROM department WHERE name = ?', [answer.removeDept], function (err, res) {
 				if (err) throw err;
-				log.red(`
+				console.log(
+					chalk.redBright(`
 
 			-------------------------------------------------------------------------------------------------
 			The ${answer.removeDept} Department Has Been Removed From The DB
 			-------------------------------------------------------------------------------------------------
 
-				`);
+				`)
+				);
 			});
 			reRun();
 		});
@@ -930,7 +967,8 @@ function func14() {
 //! Function 14 Ends Program with closing application message
 function func15() {
 	//
-	log.red(`
+	console.log(
+		chalk.redBright(`
     
      ______                       __  __                        __      __                           
     /      \                     /  |/  |                      /  |    /  |                          
@@ -957,7 +995,8 @@ function func15() {
                                                                                                      
                                                                                                      
     
-    `);
+    `)
+	);
 	connection.end();
 }
 
