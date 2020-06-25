@@ -543,7 +543,7 @@ function func6() {
 
 											let updateroleID = FindNewRoleID();
 
-											lconsole.log(
+											console.log(
 												chalk.yellowBright(`
 			
 			-------------------------------------------------------------------------------------------------
@@ -565,7 +565,7 @@ function func6() {
 												.then(function (answer) {
 													if (answer.ensureRemove === 'YES') {
 														//
-														lconsole.log(
+														console.log(
 															chalk.redBright(`
 			
 			-------------------------------------------------------------------------------------------------
