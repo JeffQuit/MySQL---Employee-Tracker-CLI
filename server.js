@@ -3,7 +3,7 @@ const mysql = require('mysql');
 const inquirer = require('inquirer');
 const cTable = require('console.table');
 
-//* Switching Logger to Chalk NPM Package
+//* Switching Logger to Chalk NPM Package to print colorful console.log messages
 const chalk = require('chalk');
 
 //*Constructor Classes
